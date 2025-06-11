@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>🌈 SkyCheck</title>
+</head>
+<body>
+  <h1>🌈 SkyCheck</h1>
+
+  <form action="/sky" method="POST">
+    <input type="text" name="city" placeholder="도시명을 입력하세요" required>
+    <button type="submit">Enter</button>
+  </form>
+
+  <% if (error) { %>
+    <p style="color:red;"><%= error %></p>
+  <% } %>
+
+  <% if (weather) { %>
+    <div>
+      <!-- 도시 : 도시이름(국가코드) -->
+      <h2>🌍 도시 : <%= weather.name %> (<%= weather.sys.country %>)</h2>
+      <img src="https://openweathermap.org/img/wn/<%= weather.weather[0].icon %>@2x.png" alt="날씨 아이콘" />
+      <p>🌡️ 온도 : <%= weather.main.temp %>°C</p>
+      <p>🌥️ 날씨 : <%= weather.weather[0].description %></p>
+      <p>💨 바람 : <%= weather.wind.speed %> m/s</p>
+    </div>
+  <% } %>
+</body>
+</html>
