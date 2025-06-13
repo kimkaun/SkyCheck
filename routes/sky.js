@@ -13,22 +13,31 @@ router.post('/', async (req, res) => {
   const city = req.body.city;
   const apiKey = process.env.OPENWEATHER_API_KEY;
 
-  // 도시명이 없으면 에러 메세지표시
   if (!city) {
-    return res.render('sky', { weather: null, error: '도시명을 입력하세요.' });
+    return res.render('sky', { weather: null, air: null, error: '도시명을 입력하세요.' });
   }
 
   try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric&lang=kr`;
-    const response = await axios.get(url);
-    const weather = response.data;
-    // 날씨 정보와 에러 없음 상태로 렌더링
-    res.render('sky', { weather, error: null });
-  } catch (err) {
-    // api 요청 실패 시 에러 메세지 렌더링
-    res.render('sky', { weather: null, error: '도시를 찾을 수 없습니다.' });
+    // 도시 날씨 정보 요청
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric&lang=kr`;
+    const weatherResponse = await axios.get(weatherUrl);
+    const weather = weatherResponse.data;
+
+    // 해당 도시의 위도, 경도 추출
+    const lat = weather.coord.lat;
+    const lon = weather.coord.lon;
+
+    // 위도, 경도를 이용해 미세먼지 정보 요청
+    const airUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+    const airResponse = await axios.get(airUrl);
+    const air = airResponse.data.list[0];
+
+    // 에러가 없으면 날씨와 미세먼지 렌더링
+    res.render('sky', { weather, air, error: null });
+  }
+  // 에러가 있으면 ''문장 렌더링 
+  catch (err) {
+    res.render('sky', { weather: null, air: null, error: '도시를 찾을 수 없습니다.' });
   }
 });
 module.exports = router;
-// 서버에 대한 의미가없다. ejs로만 해도 충분히 가능함 뭔가 있어야함
-// 지도를 넣으면 새로운 api가 들어가긴하는데 만점은 아니다

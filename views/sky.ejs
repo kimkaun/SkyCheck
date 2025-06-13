@@ -24,6 +24,12 @@
       <p>🌡️ 온도 : <%= weather.main.temp %>°C</p>
       <p>🌥️ 날씨 : <%= weather.weather[0].description %></p>
       <p>💨 바람 : <%= weather.wind.speed %> m/s</p>
+      <% if (air) { %>
+        <p>🌫️ 미세먼지(PM2.5) : <%= air.components.pm2_5 %> µg/m³</p>
+        <p>🌫️ 초미세먼지(PM10) : <%= air.components.pm10 %> µg/m³</p>
+        <% const aqiText = ["", "아주 좋음", "좋음", "보통", "나쁨", "매우 나쁨"]; %>
+        <p>🏙️ 대기질 지수 : <%= aqiText[air.main.aqi] %></p>
+      <% } %>      
     </div>
   <% } %>
 </body>
