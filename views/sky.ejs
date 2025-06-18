@@ -3,27 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <title>🌈 SkyCheck</title>
+  <!-- Leaflet CSS: 지도 스타일을 적용하기 위한 CSS를 불러옵니다 -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <link rel="stylesheet" href="/sky.css" />
 </head>
 <body>
   <h1>🌈 SkyCheck</h1>
-
+  <!-- 도시명 입력 -->
   <form action="/sky" method="POST">
     <input type="text" name="city" placeholder="도시명을 입력하세요" required>
     <button type="submit">Enter</button>
   </form>
 
+  <!-- 에러 메시지 출력 (도시를 찾지 못했을 때) -->
   <% if (error) { %>
     <p style="color:red;"><%= error %></p>
   <% } %>
 
+  <!-- 날씨 정보 표시 -->
   <% if (weather) { %>
     <div>
-      <!-- 도시 : 도시이름(국가코드) -->
       <h2>🌍 도시 : <%= weather.name %> (<%= weather.sys.country %>)</h2>
+      <!-- 날씨 아이콘 -->
       <img src="https://openweathermap.org/img/wn/<%= weather.weather[0].icon %>@2x.png" alt="날씨 아이콘" />
       <p>🌡️ 온도 : <%= weather.main.temp %>°C</p>
       <p>🌥️ 날씨 : <%= weather.weather[0].description %></p>
       <p>💨 바람 : <%= weather.wind.speed %> m/s</p>
+      <!-- 미세먼지 정보 표시 -->
       <% if (air) { %>
         <p>🌫️ 미세먼지(PM2.5) : <%= air.components.pm2_5 %> µg/m³</p>
         <p>🌫️ 초미세먼지(PM10) : <%= air.components.pm10 %> µg/m³</p>
@@ -31,6 +40,32 @@
         <p>🏙️ 미세먼지 농도 : <%= aqiText[air.main.aqi] %></p>
       <% } %>      
     </div>
+
+    <!-- 지도 출력 영역: 높이 400px, 너비 100%, 위쪽에 20px 여백 -->
+    <div id="map" style="height: 400px; width: 100%; margin-top: 20px;"></div>
+
+    <!-- Leaflet JS 라이브러리 불러오기 -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+      // 서버에서 전달받은 날씨 정보로 위도, 경도 변수 선언
+      const lat = "<%= weather.coord.lat %>";
+      const lon = "<%= weather.coord.lon %>";
+
+      // 지도 생성: 'map' 아이디를 가진 div에, 위도·경도 좌표를 중심으로 확대 레벨 13으로 설정
+      const map = L.map('map').setView([lat, lon], 13);
+
+      // 오픈스트리트맵 타일 레이어 추가: 지도 타일 로드 및 저작권 표시
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      // 마커 추가: 지도 중심 좌표에 마커 표시, 팝업에 도시명과 '현재 위치' 텍스트 보여줌
+      L.marker([lat, lon]).addTo(map)
+        .bindPopup(`<b><%= weather.name %></b><br>현재 위치`)
+        .openPopup();
+    </script>
   <% } %>
 </body>
 </html>
